@@ -11,6 +11,14 @@ def clean_material_slots(obj):
         if material is not None and index in used_indices
     ]
 
+    # If faces point only to empty slots, keep the first real material instead
+    # of leaving the object with no material slots at all.
+    if not keep_indices:
+        for index, material in enumerate(old_materials):
+            if material is not None:
+                keep_indices = [index]
+                break
+
     if len(keep_indices) == len(old_materials):
         return
 
@@ -32,17 +40,15 @@ def clean_material_slots(obj):
 # Keep current selection so we can restore it after cleanup.
 selected_objects = list(bpy.context.selected_objects)
 active_object = bpy.context.view_layer.objects.active
-mesh_objects = [
-    obj
-    for obj in bpy.context.scene.objects
-    if obj.type == "MESH"
-]
 
 # Make sure we are in Object Mode.
 if bpy.ops.object.mode_set.poll():
     bpy.ops.object.mode_set(mode="OBJECT")
 
-for obj in mesh_objects:
+for obj in selected_objects:
+    if obj.type != "MESH":
+        continue
+
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
