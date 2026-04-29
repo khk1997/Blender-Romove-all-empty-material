@@ -1,5 +1,34 @@
 import bpy
 
+
+def clean_material_slots(obj):
+    mesh = obj.data
+    used_indices = {polygon.material_index for polygon in mesh.polygons}
+    old_materials = [slot.material for slot in obj.material_slots]
+    keep_indices = [
+        index
+        for index, material in enumerate(old_materials)
+        if material is not None and index in used_indices
+    ]
+
+    if len(keep_indices) == len(old_materials):
+        return
+
+    index_map = {
+        old_index: new_index
+        for new_index, old_index in enumerate(keep_indices)
+    }
+    old_polygon_indices = [polygon.material_index for polygon in mesh.polygons]
+    kept_materials = [old_materials[index] for index in keep_indices]
+
+    mesh.materials.clear()
+    for material in kept_materials:
+        mesh.materials.append(material)
+
+    for polygon, old_index in zip(mesh.polygons, old_polygon_indices):
+        polygon.material_index = index_map.get(old_index, 0)
+
+
 # Keep current selection so we can restore it after cleanup.
 selected_objects = list(bpy.context.selected_objects)
 active_object = bpy.context.view_layer.objects.active
@@ -16,14 +45,7 @@ for obj in selected_objects:
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
 
-    # Remove material slots that are not assigned to any faces.
-    bpy.ops.object.material_slot_remove_unused()
-
-    # Remove empty material slots with no material assigned.
-    for index in reversed(range(len(obj.material_slots))):
-        if obj.material_slots[index].material is None:
-            obj.active_material_index = index
-            bpy.ops.object.material_slot_remove()
+    clean_material_slots(obj)
 
 # Restore original selection.
 bpy.ops.object.select_all(action="DESELECT")
