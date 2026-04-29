@@ -32,15 +32,17 @@ def clean_material_slots(obj):
 # Keep current selection so we can restore it after cleanup.
 selected_objects = list(bpy.context.selected_objects)
 active_object = bpy.context.view_layer.objects.active
+mesh_objects = [
+    obj
+    for obj in bpy.context.scene.objects
+    if obj.type == "MESH"
+]
 
 # Make sure we are in Object Mode.
 if bpy.ops.object.mode_set.poll():
     bpy.ops.object.mode_set(mode="OBJECT")
 
-for obj in selected_objects:
-    if obj.type != "MESH":
-        continue
-
+for obj in mesh_objects:
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
