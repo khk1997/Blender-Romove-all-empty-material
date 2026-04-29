@@ -1,5 +1,5 @@
 bl_info = {
-    "name": "Remove Unused Empty Materials",
+    "name": "Material Slot Cleanup",
     "author": "khk1997",
     "version": (1, 0, 0),
     "blender": (3, 0, 0),

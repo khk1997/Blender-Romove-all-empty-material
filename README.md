@@ -1,4 +1,4 @@
-# Blender Remove All Empty Material
+# Material Slot Cleanup
 
 Blender add-on for cleaning material slots and unused data.
 
